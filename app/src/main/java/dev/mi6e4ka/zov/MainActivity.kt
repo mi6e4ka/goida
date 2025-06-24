@@ -10,10 +10,6 @@ import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -122,7 +118,7 @@ fun AppWithTabs() {
 
 @Composable
 fun MainPage() {
-    var scrollState = rememberScrollState()
+    val scrollState = rememberScrollState()
     val context = LocalContext.current.applicationContext
     val hr = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
     val mn = Calendar.getInstance().get(Calendar.MINUTE)
