@@ -3,10 +3,12 @@ package dev.mi6e4ka.zov
 import android.content.Context
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.net.Uri
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.VideoView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,10 +53,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import coil3.compose.rememberAsyncImagePainter
 import dev.mi6e4ka.zov.ui.theme.ZOVTheme
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import androidx.core.net.toUri
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,12 +104,6 @@ fun AppWithTabs() {
         Box(modifier = Modifier.padding(padding)) {
             HorizontalPager(state = pagerState) {
                 tab ->
-//                AnimatedContent(
-//                    targetState = pagerState.currentPage,
-//                    transitionSpec = {
-//                        scaleIn() togetherWith scaleOut()
-//                    }
-//                ) { tab ->
                     when (tab) {
                         0 -> MainPage()
                         1 -> PashaPage()
@@ -125,8 +124,8 @@ fun MainPage() {
     val bm = context.getSystemService(Context.BATTERY_SERVICE) as BatteryManager
     val batLevel:Int = bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)
     Column(
-        modifier = Modifier.verticalScroll(scrollState).padding(5.dp).fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.verticalScroll(scrollState).fillMaxSize().padding(0.dp, 5.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Button(
             onClick = {
@@ -139,10 +138,10 @@ fun MainPage() {
         Text(text = "$hr hour", fontSize = 85.sp)
         Text(text = "$mn minet", fontSize = 85.sp)
         Text(text = "$batLevel% chrg", fontSize = 75.sp)
-        Image(
-            painter = rememberAsyncImagePainter(R.raw.furry_speech),
-            contentDescription = "furry speech",
-            modifier = Modifier.width(320.dp)
+        WebmVideoView(
+            resourceId = R.raw.furry_speech,
+            modifier =  Modifier.width(300.dp)
+                     .aspectRatio(1f / 1f)
         )
         Text(text = "opensource version", fontSize = 30.sp)
     }
@@ -157,9 +156,9 @@ fun PashaPage() {
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxHeight()
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(R.raw.furripasha),
-            contentDescription = "семья паши"
+        WebmVideoView(
+            resourceId = R.raw.furripasha,
+            modifier = Modifier.fillMaxWidth()
         )
         Text("вкладка с фурри по запросу паши (это буквально он)")
         Button(onClick = {
@@ -184,6 +183,23 @@ fun PashaPage() {
             }
         }
     }
+}
+
+@Composable
+fun WebmVideoView(resourceId: Int, modifier: Modifier = Modifier) {
+    val context = LocalContext.current.applicationContext
+    AndroidView(
+        factory = {
+            VideoView(it).apply {
+                setVideoURI("android.resource://${context.packageName}/${resourceId}".toUri())
+                setOnPreparedListener { mediaPlayer ->
+                    mediaPlayer.isLooping = true
+                    start()
+                }
+            }
+        },
+        modifier = modifier
+    )
 }
 
 @Composable

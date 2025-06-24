@@ -8,6 +8,14 @@ android {
     namespace = "dev.mi6e4ka.zov"
     compileSdk = 35
 
+    splits {
+        abi {
+            isEnable = false
+            reset()
+            include("x86_64", "arm64-v8a", "armeabi-v7a")
+        }
+    }
+
     defaultConfig {
         applicationId = "dev.mi6e4ka.zov"
         minSdk = 24
@@ -20,7 +28,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
