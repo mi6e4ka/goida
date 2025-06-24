@@ -3,7 +3,6 @@ package dev.mi6e4ka.zov
 import android.content.Context
 import android.media.AudioManager
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Handler
@@ -54,7 +53,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
-import coil3.compose.rememberAsyncImagePainter
+import androidx.core.content.edit
 import dev.mi6e4ka.zov.ui.theme.ZOVTheme
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -205,12 +204,14 @@ fun WebmVideoView(resourceId: Int, modifier: Modifier = Modifier) {
 @Composable
 fun MangoClicker() {
     val context = LocalContext.current.applicationContext
-    var counter by remember { mutableIntStateOf(0) }
+    val sharedPrefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
+    var counter by remember { mutableIntStateOf(sharedPrefs.getInt("mangoCount", 0)) }
     var mangoIncident by remember { mutableStateOf(false) }
 
     val mediaPlayer = remember {
         MediaPlayer.create(context, R.raw.mangophonk)
     }
+    val mangoIncidentEnabled = !sharedPrefs.getBoolean("mango", false)
     Column(
         verticalArrangement = Arrangement.spacedBy(25.dp, alignment = Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -225,8 +226,16 @@ fun MangoClicker() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable(enabled = !mangoIncident) {
-                        if (counter==52) {
+                        if (!mangoIncidentEnabled) {
+                            sharedPrefs.edit {
+                                putInt("mangoCount", counter)
+                            }
+                        }
+                        if (counter==52 && mangoIncidentEnabled) {
                             mangoIncident = true
+                            sharedPrefs.edit {
+                                putBoolean("mango", true)
+                            }
                             val audioManager = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
                             val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
                             audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, maxVolume, 0)
